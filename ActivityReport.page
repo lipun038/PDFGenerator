@@ -1,0 +1,215 @@
+<apex:page standardController="Activity__c" extensions="ActivityReportController" readOnly="true" applyHtmlTag="false" sidebar="false" showHeader="false" renderAs="advanced_pdf">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <style type="text/css">
+        @page {    
+            size: A4 portrait;    
+            border: 2px solid black;    
+            padding-left: 8px;    
+            padding-right: 8px;      
+        } 
+        p {font-size: 0.8rem;}
+        h6 { padding: 0; margin: 0 }
+        h4 { padding: 0; margin: 0 }
+        li {font-size: 0.8rem }
+        .centerBold{
+            text-align: center;    
+            font-weight: bold; 
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="centerBold">
+            <apex:image url="{!$Resource.MuleHideLogo}" width="80" height="80"/>
+        </div>
+        <div class="centerBold">
+            <h3>Inspection Number:&nbsp;&nbsp;{!activity.Name}</h3>
+        </div>
+        <div style="padding: 0px 20px; display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: row; align-items: center; ">
+                <div><strong>Inspector :&nbsp;&nbsp;</strong>{!techRep.Name}, {!techRep.phone}, {!techRep.email}</div>
+                <br/>
+                <div><strong>Date:&nbsp;&nbsp;</strong><apex:outputField value="{!activity.Activity_Date__c}" /></div>
+                <br/>
+                <div><strong>Attendees:&nbsp;&nbsp;</strong></div>
+                <br/>
+                <div>
+                    <table border="0" width="80%">
+                       <apex:repeat var="con" value="{!attendees}">
+                        	<tr><td><strong>Type:&nbsp;&nbsp;</strong>{!con.twodbm__Type__c}</td><td><strong>Name:&nbsp;&nbsp;</strong>{!con.Name}</td></tr>
+                        </apex:repeat> 
+                    </table>
+                </div>
+                <br/>
+                <div><strong>Report Type:&nbsp;&nbsp;</strong>{!activity.twodbm__Activity_Type__c}</div>
+            </div>
+        </div>
+        <br/>
+        <div style="border: 1px solid black;"></div>
+        <div class="centerBold">
+            <h3>Project Information</h3>
+        </div>
+        <div style="padding: 0px 20px; display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: row; align-items: center; ">
+                <div>
+                    <table border="0" width="80%">
+                        <tr>
+                            <td><strong>Number:&nbsp;&nbsp;</strong>{!project.Name}</td>
+                            <td><strong>Name:&nbsp;&nbsp;</strong>{!project.twodbm__Job_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Address:&nbsp;&nbsp;</strong>{!project.twodbm__Address_Line_1__c}<br/>{!project.twodbm__Address_Line_2__c}<br/>{!project.twodbm__City__c}, {!project.twodbm__State__c}<br/>{!project.twodbm__Country__c}, {!project.twodbm__Zipcode__c}</td>
+                            <td><strong>DOC:&nbsp;&nbsp;</strong><apex:outputField value="{!project.NOC_Receive_Date__c}" /></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <div style="border: 1px solid black;"></div>
+         <div class="centerBold">
+            <h3>Contractor Information</h3>
+        </div>
+        <div style="padding: 0px 20px; display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: row; align-items: center; ">
+                <div>
+                    <table border="0" width="80%">
+                        <tr>
+                            <td><strong>Name:&nbsp;&nbsp;</strong>{!contractor.Name}</td>
+                            <td><strong>Office Number:&nbsp;&nbsp;</strong>{!contractor.Phone}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Address:&nbsp;&nbsp;</strong>{!contractor.BillingStreet}<br/>{!contractor.BillingCity}, {!contractor.BillingState}<br/>{!contractor.BillingCountry}, {!contractor.BillingPostalCode}</td>
+                            <td>
+                                <strong>Mobile Number:&nbsp;&nbsp;</strong>{!contractor.twodbm__Cell_Phone__c}
+                                <br/>
+                                <strong>Email:&nbsp;&nbsp;</strong>{!contractor.twodbm__Email__c}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <div style="border: 1px solid black;"></div>
+         <div class="centerBold">
+            <h3>Observations</h3>
+        </div>
+        <div style="padding: 0px 20px; display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: row; align-items: center; ">
+                <apex:repeat var="ob" value="{!obList}">
+                    <div>
+                        <div><strong>{! ob.Name}</strong></div>
+                        <br/>
+                        <div><strong>Description:&nbsp;&nbsp;</strong><br/><apex:outputField value="{!ob.Comment__c}" /></div>
+                        <br/>
+                        <div style="padding: 2rem">
+                            <apex:repeat var="cdId" value="{!obImageMap[ob.id]}">
+                                <div style="display: inline-block;border: 5px solid black;">
+                                    <img width="250px" height="200px"  src="/sfc/servlet.shepherd/document/download/{!cdId}" />
+                                </div>
+                            </apex:repeat>                         
+                        </div>    
+                    </div>
+                    <br/>
+                </apex:repeat>
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <apex:outputPanel rendered="{! IF(activity.twodbm__Status__c == 'Defect Found Submitted & Synced',true,false)}">
+        <div style="border: 1px solid black;"></div>
+         <div class="centerBold">
+            <h3>Defects</h3>
+        </div>
+        <div style="padding: 0px 20px; display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: row; align-items: center; ">
+                <apex:repeat var="de" value="{!deList}">
+                    <div>
+                        <div><strong>{! de.Name}</strong></div>
+                        <br/>
+                        <div>
+                        	<table border="0" width="100%">
+                                <tr>
+                                    <td width="30%"><strong>Category:&nbsp;&nbsp;</strong>{!de.twodbm__Category__c}</td>
+                                    <td width="35%"><strong>Defect:&nbsp;&nbsp;</strong>{!de.twodbm__Defect__c}</td>
+                                    <td width="35%"><strong>Report:&nbsp;&nbsp;</strong>{!de.twodbm__Repair__c}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <br/>
+                        <div><strong>Description:&nbsp;&nbsp;</strong><br/><apex:outputField value="{!de.Comment__c}" /></div>
+                        <br/>
+                        <div style="padding: 2rem">
+                            <apex:repeat var="cdId" value="{!deImageMap[de.id]}">
+                                <div style="display: inline-block;border: 5px solid black;">
+                                    <img width="250px" height="200px"  src="/sfc/servlet.shepherd/document/download/{!cdId}" />
+                                </div>
+                            </apex:repeat>                         
+                        </div>    
+                    </div>
+                    <br/>
+                </apex:repeat>
+            </div>
+        </div>
+        <br/>
+        </apex:outputPanel>    
+        <div style="border: 1px solid black;"></div>
+        
+        <div style="padding: 20px; display: flex; flex-direction: column;">
+            <div
+                style="padding: 20px; display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
+                <table width="100%">
+                    <tr>
+                        <td width="50%"><h4>Reinspection Required: {! IF(activity.twodbm__ReInspection__c,'Yes','No')}</h4></td>
+                        <td width="50%"><h4>Repair Photos Required: {! IF(activity.twodbm__Repair_photos_required__c,'Yes','No')}</h4></td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <h6>IMPORTANT—THE DEFECTS LISTED ABOVE MUST BE COMPLETED IN A TIMELY FASHION. IT WILL NEED TO BE SIGNED AND
+                    RETURNED USING ONE OF THE METHODS LISTED BELOW BEFORE A WARRANTY CAN BE ISSUED OR EFFECTIVE. EVEN IF NO
+                    REMEDIAL OR ADDITIONAL ACTION IS REQUIRED, THIS FORM STILL MUST BE SIGNED AND RETURNED TO MULE-HIDE.
+                </h6>
+            </div>
+            <div style="border:  1px solid black; width: 300px; height: 100px; display: flex; justify-content: center; align-items: center;">
+                <img src="/sfc/servlet.shepherd/document/download/{!signatureId}" style="width: 300px; height: 100px"/>
+            </div>
+            <div>
+                <h6>If this report is not being signed off electronically please complete the information below:</h6>
+            </div>
+            <div>
+                <h6>Repairs completed by: _______________________________________________ Date:___/___/_____</h6>
+            </div>
+            <div>
+                <ul>
+                    <li>Completion and verification of defects repaired can be accomplished through the Mule-Hide Contactor
+                        Portal
+                        electronically.</li>
+    
+                    <li>If emailing repair photos, send to mulehidephotos@mulehide.com with your project number in the
+                        subject
+                        line.</li>
+    
+                    <li>If a re-inspection is required, the defects noted above must be verified as complete, this defect
+                        report
+                        must be returned with appropriate signatures, dates and fees, or you may electronically verify this
+                        information using the Mule-Hide contractor “portal” prior to scheduling a subsequent inspection with
+                        your
+                        Mule-Hide Technical Representative.</li>
+                </ul>
+            </div>
+            <div>
+                <p>
+                    THE INSPECTION REPORT REMAINS SUBJECT TO MULE-HIDE’S REVIEW AND REVISION. NEITHER THE ISSUANCE NOR
+                    COMPLETION OF THE DEFECTS LISTED GUARANTEES THE ISSUANCE OF A WARRANTY, WHICH REMAINS IN MULE-HIDE’S SOLE
+                    DISCRETION. BY SIGNING THIS REPORT, CONTRACTOR IS CERTIFYING THAT CONTRACTOR HAS COMPLETED THE REPAIR OF ALL
+                    LISTED DEFECTS IN ACCORDANCE WITH ALL RELEVANT MULE-HIDE SPECIFICATIONS AND HAS BEEN IN COMPLIANCE WITH ALL
+                    REQUIREMENTS OF THE ELIGIBLE CONTRACTOR AGREEMENT BETWEEN THE CONTRACTOR AND MULE-HIDE.
+                    </p>
+            </div>
+        </div>
+    </div>
+</body>
+</apex:page>
